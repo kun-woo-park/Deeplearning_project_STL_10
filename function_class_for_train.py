@@ -91,7 +91,7 @@ def train_model(model, total_epoch, val_acc_list, batch_size, lr, lr_gamma, pati
 
             # trn_loss summary
             trn_loss += loss.item()
-
+        # validation
         with torch.no_grad():
             val_loss = 0.0
             cor_match = 0
