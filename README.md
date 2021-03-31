@@ -1,10 +1,15 @@
-## Deeplearning_project_STL_10
+# Deeplearning_project_STL_10
 본 Repo는 STL 10에 대한 학습을 위해 만들어졌다. 단순히 STL 10을 학습시키는게 아니라, train set은 class당 500개씩 총 5000개, total model parameter은 2M로 제한하여 학습시키는 것이 목표이다. 물론 외부 데이터나, 외부 trained model weight의 사용은 하지 않고, scratch 상태에서 model을 학습시키는 것이 목적이다. 정리되지 않은 실험은 [Deeplearning_project_STL_10_Old](https://github.com/kun-woo-park/Deeplearning_project_STL_10_Old)에서 확인 할 수 있다.
 
-### Implementation and several tries
+## Implementation and several tries
+```bash
+git clone https://github.com/kun-woo-park/Deeplearning_project_STL_10.git
+cd Deeplearning_project_STL_10
+python3 train.py
+```
 Train set과 validation set간의 correlation을 줄이기 위해 주어진 dataset의 split을 먼저 진행하였다. train set 4000개와 validation set 1000개로 나누어 두었다. 여러 실험을 진행 후에, ResNet구조를 기반으로 model의 구조를 완성시켰다. 구현된 model 구조는 다음과 같다.
 
-#### Custom ResNet model
+### Custom ResNet model
 ```python
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
@@ -198,10 +203,10 @@ def Model(pretrained: bool = False, progress: bool = True, **kwargs):
 ```
 여기에 다양한 기법을 활용하여 학습 성능을 높였다. 사용된 기법들은 data augmentation, label smoothing, learning rate scheduling, fix train-test resolution discrepancy 들이 있다.
 
-#### Data augmentation
+### Data augmentation
 Train set이 총 5000개로 많지 않은 숫자였기 때문에, data augmentation을 통해 총 10만개의 data로 data 양을 늘렸다. 사용된 augmentation은 다음과 같다.
 
-##### Augmentation code for train
+#### Augmentation code for train
 ```python
 transforms.Compose([
         transforms.RandomRotation(degrees=45),
@@ -214,7 +219,7 @@ transforms.Compose([
             normalize,
         ])
 ```
-##### Augmentation code for fine tuning
+#### Augmentation code for fine tuning
 ```python
 transforms.Compose([
         transforms.RandomRotation(degrees=45),
@@ -228,9 +233,9 @@ transforms.Compose([
         ])
 ```
 
-#### Label smoothing
+### Label smoothing
 Criterion을 label smoothing을 적용한 CrossEntropyLoss를 사용해 보았으나, 성능 향상이 거의 없어 최종 실험에서는 적용을 제외했다. 구현된 코드는 다음과 같다.
-##### Code for label smoothing loss
+#### Code for label smoothing loss
 ```python
 class LabelSmoothingLoss(nn.Module):
     def __init__(self, classes, smoothing=0.1, dim=-1):
@@ -247,15 +252,15 @@ class LabelSmoothingLoss(nn.Module):
             true_dist.scatter_(1, target.data.unsqueeze(1), self.confidence)
         return torch.mean(torch.sum(-true_dist * pred, dim=self.dim))
 ```
-#### Learning rate scheduling
+### Learning rate scheduling
 여러 learning rate sheduler을 사용해 보았지만, cosine annealing scheduler가 가장 이상적이었다. 추가적인 수정을 통해 cosine annealing(warm restart) 이 update되는 step마다 최대값이 감소하도록 다시 구현하였다. 구현된 learning rate scheduling은 아래와 같다.
-##### Overview of learning rate scheduling
+#### Overview of learning rate scheduling
 <img src="./img/lr_sch.png" width="50%">
 
-#### Fix train-test resolution discrepancy
+### Fix train-test resolution discrepancy
 이 기법은 https://arxiv.org/pdf/1906.06423.pdf 논문을 토대로 적용하였다. 단순하게 train시에 augmented 되면서 잘려 있던 이미지의 해상도를 낮추고(crop되어 augmented될 때 물체의 사이즈가 커지지 않고 유지시키기 위해) test시에는 해상도를 높여서 train시의 물체와 test시의 물체가 비슷한 해상도(비슷한 크기로)로 보이도록 하는 것이다. Data augmentation에서도 확인할 수 있듯, 이를 위해 train시에는 70으로 resize하여 300 epochs를 학습하였고, test시를 위해 120으로 resize하여 추가적으로 140 epochs을 학습하였다(fine tuning).
 
-### Result
+## Result
 최종 결과에 대한 validation accuracy의 그래프는 아래와 같다. x축은 epoch 수이고, y축은 validation accuracy이다. 최종적으로 2M의 제한 이내에서 84%의 정확도까지 개선하였다.
-##### Result of validation accuracy
+#### Result of validation accuracy
 <img src="./img/loss.png" width="80%">
