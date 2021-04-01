@@ -210,7 +210,6 @@ Train set이 총 5000개로 많지 않은 숫자였기 때문에, data augmentat
 ```python
 transforms.Compose([
         transforms.RandomRotation(degrees=45),
-            
         transforms.RandomResizedCrop(70),
         transforms.ColorJitter(.3,.3,.3,.3),
         transforms.RandomHorizontalFlip(),
@@ -223,7 +222,6 @@ transforms.Compose([
 ```python
 transforms.Compose([
         transforms.RandomRotation(degrees=45),
-            
         transforms.RandomResizedCrop(120),
         transforms.ColorJitter(.3,.3,.3,.3),
         transforms.RandomHorizontalFlip(),
