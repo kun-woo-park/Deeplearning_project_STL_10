@@ -16,7 +16,7 @@ def train_data_load(train_path_path, val_path_path, batch_size, resolution, norm
             transforms.RandomResizedCrop(resolution),
             transforms.ColorJitter(.3, .3, .3, .3),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
             transforms.ToTensor(),
             normalize,
         ])
