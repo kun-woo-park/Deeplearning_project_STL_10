@@ -214,7 +214,7 @@ transforms.Compose([
         transforms.RandomResizedCrop(70),
         transforms.ColorJitter(.3,.3,.3,.3),
         transforms.RandomHorizontalFlip(),
-            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
             transforms.ToTensor(),
             normalize,
         ])
